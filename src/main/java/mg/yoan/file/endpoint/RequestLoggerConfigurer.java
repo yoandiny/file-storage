@@ -49,9 +49,7 @@ public class RequestLoggerConfigurer implements WebMvcConfigurer {
               .map(
                   entry -> {
                     String[] values = entry.getValue();
-                    return entry.getKey()
-                        + "="
-                        + (values == null ? "" : String.join(",", values));
+                    return entry.getKey() + "=" + (values == null ? "" : String.join(",", values));
                   })
               .collect(joining(";"));
       log.info(

@@ -37,9 +37,11 @@ class FileControllerTest {
 
     MockMultipartFile file =
         new MockMultipartFile("file", "photo.png", "image/png", new byte[] {1, 2, 3});
+    MockMultipartFile email =
+        new MockMultipartFile("email", "", "text/plain", "user@example.com".getBytes());
 
     mockMvc
-        .perform(multipart("/files").file(file).param("email", "user@example.com"))
+        .perform(multipart("/files").file(file).file(email))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(storedFile.getId().toString()))
         .andExpect(jsonPath("$.name").value("photo.png"))
@@ -54,10 +56,10 @@ class FileControllerTest {
 
     MockMultipartFile file =
         new MockMultipartFile("file", "doc.pdf", "application/pdf", new byte[] {1, 2, 3});
+    MockMultipartFile email =
+        new MockMultipartFile("email", "", "text/plain", "user@example.com".getBytes());
 
-    mockMvc
-        .perform(multipart("/files").file(file).param("email", "user@example.com"))
-        .andExpect(status().isBadRequest());
+    mockMvc.perform(multipart("/files").file(file).file(email)).andExpect(status().isBadRequest());
 
     verify(fileUploadService).upload(any(), eq("user@example.com"));
   }

@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: File Storage API
+  description: |
+    API for uploading and listing image files.
+    Uploaded PNG/JPG files are stored in S3 synchronously.
+    A black-and-white version download link is then emailed asynchronously.
+    File metadata can be listed from the database.
+  version: 1.0.0
+
+paths:
+  /files:
+    post:
+      tags:
+        - Files
+      summary: Upload an image file
+      description: |
+        Accepts a PNG or JPG image and the uploader's email.
+        The file is stored in S3 and metadata is persisted synchronously.
+        Afterwards, an asynchronous job converts the image to black and white
+        and emails a temporary download link to the provided address.
+      operationId: uploadFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - email
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to upload. Only PNG and JPG/JPEG are accepted.
+                email:
+                  type: string
+                  format: email
+                  description: Email of the user who uploaded the file.
+                  example: user@example.com
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+              example:
+                id: 11111111-1111-1111-1111-111111111111
+                name: photo.png
+                userEmail: user@example.com
+                creationDatetime: '2026-07-13T05:00:00Z'
+        '400':
+          description: Invalid request (missing fields or unsupported file type)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Files
+      summary: List all stored files
+      description: Returns the metadata of all files persisted in the database.
+      operationId: listFiles
+      responses:
+        '200':
+          description: List of stored files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileResponse'
+              example:
+                - id: 11111111-1111-1111-1111-111111111111
+                  name: photo.png
+                  userEmail: user@example.com
+                  creationDatetime: '2026-07-13T05:00:00Z'
+
+components:
+  schemas:
+    FileResponse:
+      type: object
+      required:
+        - id
+        - name
+        - userEmail
+        - creationDatetime
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the stored file
+        name:
+          type: string
+          description: Original file name
+          example: photo.png
+        userEmail:
+          type: string
+          format: email
+          description: Email of the uploader
+          example: user@example.com
+        creationDatetime:
+          type: string
+          format: date-time
+          description: Creation timestamp in UTC
+          example: '2026-07-13T05:00:00Z'
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Only PNG and JPG files are accepted
+        path:
+          type: string
+          example: /files

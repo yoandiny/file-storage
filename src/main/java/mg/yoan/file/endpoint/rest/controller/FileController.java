@@ -12,7 +12,6 @@ import mg.yoan.file.service.StoredFileService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +26,7 @@ public class FileController {
 
   @PostMapping(value = "/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public FileResponse upload(
-      @RequestPart("file") MultipartFile file, @RequestParam("email") String email) {
+      @RequestPart("file") MultipartFile file, @RequestPart("email") String email) {
     try {
       return toResponse(fileUploadService.upload(file, email));
     } catch (IllegalArgumentException e) {

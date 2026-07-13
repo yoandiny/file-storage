@@ -40,7 +40,8 @@ class FileUploadServiceTest {
 
   @ParameterizedTest
   @CsvSource({"photo.png,image/png", "photo.jpg,image/jpeg", "photo.jpeg,image/jpeg"})
-  void upload_stores_in_s3_persists_metadata_and_publishes_event(String fileName, String contentType) {
+  void upload_stores_in_s3_persists_metadata_and_publishes_event(
+      String fileName, String contentType) {
     var multipart = new MockMultipartFile("file", fileName, contentType, new byte[] {1, 2, 3, 4});
     when(bucketComponent.upload(any(), anyString()))
         .thenReturn(new FileHash(FileHashAlgorithm.SHA256, "hash"));
@@ -56,7 +57,9 @@ class FileUploadServiceTest {
 
     ArgumentCaptor<String> bucketKeyCaptor = ArgumentCaptor.forClass(String.class);
     verify(bucketComponent).upload(any(), bucketKeyCaptor.capture());
-    assertEquals(FileUploadService.UPLOADS_PREFIX + saved.getId() + "/" + fileName, bucketKeyCaptor.getValue());
+    assertEquals(
+        FileUploadService.UPLOADS_PREFIX + saved.getId() + "/" + fileName,
+        bucketKeyCaptor.getValue());
 
     verify(storedFileRepository).save(saved);
 
@@ -74,7 +77,8 @@ class FileUploadServiceTest {
   @ParameterizedTest
   @ValueSource(strings = {"doc.pdf", "notes.txt", "archive.zip", "image.gif", "no-extension"})
   void upload_rejects_non_png_jpg_files(String fileName) {
-    var multipart = new MockMultipartFile("file", fileName, "application/octet-stream", new byte[] {1});
+    var multipart =
+        new MockMultipartFile("file", fileName, "application/octet-stream", new byte[] {1});
 
     var error =
         assertThrows(IllegalArgumentException.class, () -> subject.upload(multipart, "a@b.com"));
